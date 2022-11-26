@@ -1,31 +1,36 @@
 --- dwm.c
 +++ dwm.c
-@@ -443,9 +448,26 @@ buttonpress(XEvent *e)
- 		if (i < LENGTH(tags)) {
- 			click = ClkTagBar;
+@@ -207,6 +208,7 @@ static void setup(void);
+ static void seturgent(Client *c, int urg);
+ static void showhide(Client *c);
+ static void sigchld(int unused);
++static void sigstatusbar(const Arg *arg);
+ static void spawn(const Arg *arg);
+ static void tag(const Arg *arg);
+ static void tagmon(const Arg *arg);
+@@ -445,9 +451,23 @@ buttonpress(XEvent *e)
  			arg.ui = 1 << i;
--		} else if (ev->x < x + blw)
-+			goto execute_handler;
-+		} else if (ev->x < x + blw) {
+ 		} else if (ev->x < x + blw)
  			click = ClkLtSymbol;
--		else if (ev->x > selmon->ww - TEXTW(stext))
-+			goto execute_handler;
-+		}
-+
-+		x += blw;
-+
-+		for(i = 0; i < LENGTH(launchers); i++) {
-+			x += TEXTW(launchers[i].name);
-+			
-+			if (ev->x < x) {
-+				Arg a;
-+				a.v = launchers[i].command;
-+				spawn(&a);
-+				return;
-+			}
-+		}	
-+
-+		if (ev->x > selmon->ww - TEXTW(stext))
+-		else if (ev->x > selmon->ww - (int)TEXTW(stext))
++		else if (ev->x > selmon->ww - statusw) {
++			x = selmon->ww - statusw;
  			click = ClkStatusText;
- 		else
+-		else
++			statussig = 0;
++			for (text = s = stext; *s && x <= ev->x; s++) {
++				if ((unsigned char)(*s) < ' ') {
++					ch = *s;
++					*s = '\0';
++					x += TEXTW(text) - lrpad;
++					*s = ch;
++					text = s + 1;
++					if (x >= ev->x)
++						break;
++					statussig = ch;
++				}
++			}
++		} else
  			click = ClkWinTitle;
+ 	} else if ((c = wintoclient(ev->window))) {
+ 		focus(c);
