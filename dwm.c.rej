@@ -1,10 +1,31 @@
---- dwm.c	2019-06-06 21:23:27.023328450 +0200
-+++ dwm.c	2019-06-20 15:07:01.089767947 +0200
-@@ -1672,6 +1683,7 @@ spawn(const Arg *arg)
- {
- 	if (arg->v == dmenucmd)
- 		dmenumon[0] = '0' + selmon->num;
-+	selmon->tagset[selmon->seltags] &= ~scratchtag;
- 	if (fork() == 0) {
- 		if (dpy)
- 			close(ConnectionNumber(dpy));
+--- dwm.c
++++ dwm.c
+@@ -443,9 +448,26 @@ buttonpress(XEvent *e)
+ 		if (i < LENGTH(tags)) {
+ 			click = ClkTagBar;
+ 			arg.ui = 1 << i;
+-		} else if (ev->x < x + blw)
++			goto execute_handler;
++		} else if (ev->x < x + blw) {
+ 			click = ClkLtSymbol;
+-		else if (ev->x > selmon->ww - TEXTW(stext))
++			goto execute_handler;
++		}
++
++		x += blw;
++
++		for(i = 0; i < LENGTH(launchers); i++) {
++			x += TEXTW(launchers[i].name);
++			
++			if (ev->x < x) {
++				Arg a;
++				a.v = launchers[i].command;
++				spawn(&a);
++				return;
++			}
++		}	
++
++		if (ev->x > selmon->ww - TEXTW(stext))
+ 			click = ClkStatusText;
+ 		else
+ 			click = ClkWinTitle;
