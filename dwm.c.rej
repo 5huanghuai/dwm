@@ -1,83 +1,28 @@
 --- dwm.c
 +++ dwm.c
-@@ -193,6 +214,7 @@ static void focusstack(const Arg *arg);
- static Atom getatomprop(Client *c, Atom prop);
- static int getrootptr(int *x, int *y);
- static long getstate(Window w);
-+static unsigned int getsystraywidth();
- static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
- static void grabbuttons(Client *c, int focused);
- static void grabkeys(void);
-@@ -210,13 +232,16 @@ static void pop(Client *);
- static void propertynotify(XEvent *e);
- static void quit(const Arg *arg);
- static Monitor *recttomon(int x, int y, int w, int h);
-+static void removesystrayicon(Client *i);
- static void resize(Client *c, int x, int y, int w, int h, int interact);
-+static void resizebarwin(Monitor *m);
- static void resizeclient(Client *c, int x, int y, int w, int h);
- static void resizemouse(const Arg *arg);
-+static void resizerequest(XEvent *e);
- static void restack(Monitor *m);
- static void run(void);
- static void scan(void);
--static int sendevent(Client *c, Atom proto);
-+static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
- static void sendmon(Client *c, Monitor *m);
- static void setclientstate(Client *c, long state);
- static void setfocus(Client *c);
-@@ -285,9 +316,10 @@ static void (*handler[LASTEvent]) (XEvent *) = {
- 	[MapRequest] = maprequest,
- 	[MotionNotify] = motionnotify,
- 	[PropertyNotify] = propertynotify,
-+    [ResizeRequest] = resizerequest,
- 	[UnmapNotify] = unmapnotify
- };
--static Atom wmatom[WMLast], netatom[NetLast];
-+static Atom wmatom[WMLast], netatom[NetLast], xatom[XLast];
- static int running = 1;
- static Cur *cursor[CurLast];
- static Clr **scheme;
-@@ -467,7 +499,7 @@ buttonpress(XEvent *e)
- 			arg.ui = 1 << i;
- 		} else if (ev->x < x + blw)
- 			click = ClkLtSymbol;
--		else if (ev->x > selmon->ww - (int)TEXTW(stext))
-+		else if (ev->x > selmon->ww - (int)TEXTW(stext) - getsystraywidth())
- 			click = ClkStatusText;
- 		else
- 			click = ClkWinTitle;
-@@ -793,13 +886,17 @@ drawbar(Monitor *m)
- 	if (!m->showbar)
- 		return;
- 
-+	if(showsystray && m == systraytomon(m) && !systrayonleft)
-+		stw = getsystraywidth();
+@@ -1252,7 +1252,24 @@ propertynotify(XEvent *e)
+ void
+ quit(const Arg *arg)
+ {
+-	running = 0;
++	FILE *fd = NULL;
++	struct stat filestat;
 +
- 	/* draw status first so it can be overdrawn by tags later */
- 	if (m == selmon) { /* status is only drawn on selected monitor */
- 		drw_setscheme(drw, scheme[SchemeNorm]);
--		tw = TEXTW(stext) - lrpad + 2; /* 2px right padding */
--		drw_text(drw, m->ww - tw, 0, tw, bh, 0, stext, 0);
-+		tw = TEXTW(stext) - lrpad / 2 + 2; /* 2px extra right padding */
-+		drw_text(drw, m->ww - tw - stw, 0, tw, bh, lrpad / 2 - 2, stext, 0);
- 	}
- 
-+	resizebarwin(m);
- 	for (c = m->clients; c; c = c->next) {
- 		occ |= c->tags;
- 		if (c->isurgent)
-@@ -1206,6 +1325,13 @@ maprequest(XEvent *e)
- 	static XWindowAttributes wa;
- 	XMapRequestEvent *ev = &e->xmaprequest;
- 
-+	Client *i;
-+	if ((i = wintosystrayicon(ev->window))) {
-+		sendevent(i->win, netatom[Xembed], StructureNotifyMask, CurrentTime, XEMBED_WINDOW_ACTIVATE, 0, systray->win, XEMBED_EMBEDDED_VERSION);
-+		resizebarwin(selmon);
-+		updatesystray();
++	if ((fd = fopen(lockfile, "r")) && stat(lockfile, &filestat) == 0) {
++		fclose(fd);
++
++		if (filestat.st_ctime <= time(NULL)-2)
++			remove(lockfile);
 +	}
 +
- 	if (!XGetWindowAttributes(dpy, ev->window, &wa))
- 		return;
- 	if (wa.override_redirect)
++	if ((fd = fopen(lockfile, "r")) != NULL) {
++		fclose(fd);
++		remove(lockfile);
++		running = 0;
++	} else {
++		if ((fd = fopen(lockfile, "a")) != NULL)
++			fclose(fd);
++	}
+ }
+ 
+ Monitor *

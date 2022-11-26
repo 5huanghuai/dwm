@@ -324,7 +324,7 @@ static Window root, wmcheckwin;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
-
+#include <time.h>
 struct Pertag {
 	unsigned int curtag, prevtag; /* current and previous tag */
 	int nmasters[LENGTH(tags) + 1]; /* number of windows in master area */
@@ -1615,7 +1615,26 @@ void
 quit(const Arg *arg)
 {
 	if(arg->i) restart = 1;
-	running = 0;
+
+	FILE *fd = NULL;
+	struct stat filestat;
+
+	if ((fd = fopen(lockfile, "r")) && stat(lockfile, &filestat) == 0) {
+		fclose(fd);
+
+		if (filestat.st_ctime <= time(NULL)-2)
+			remove(lockfile);
+	}
+
+	if ((fd = fopen(lockfile, "r")) != NULL) {
+		fclose(fd);
+		remove(lockfile);
+		running = 0;
+	} else {
+		if ((fd = fopen(lockfile, "a")) != NULL)
+			fclose(fd);
+	}
+
 }
 
 Monitor *
