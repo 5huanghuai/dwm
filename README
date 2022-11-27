@@ -1,48 +1,18 @@
-dwm - dynamic window manager
-============================
-dwm is an extremely fast, small, and dynamic window manager for X.
+# 打补丁顺序
+
+restartsig  ：快速重启dwm
+autostart   ：自动启动脚本
+gaplayout   ：设置网格布局
+tunegaps    ：调整布局间的间隔
+fancybar    ：使状态栏的提示信息根据聚焦窗口展示
+hidelayout  ：隐藏没用的label
+holdlayout  ：保持每个label下的布局
+temporal_terminal   ：打开临时窗口
+launcher    ：状态栏图标启动器
+statuscmd   ：使鼠标点击有反应
+systray     ：状态栏
+doublequit  ：双此退出
+viewontag   ：将窗口转移至新的label,跟随
 
 
-Requirements
-------------
-In order to build dwm you need the Xlib header files.
 
-
-Installation
-------------
-Edit config.mk to match your local setup (dwm is installed into
-the /usr/local namespace by default).
-
-Afterwards enter the following command to build and install dwm (if
-necessary as root):
-
-    make clean install
-
-
-Running dwm
------------
-Add the following line to your .xinitrc to start dwm using startx:
-
-    exec dwm
-
-In order to connect dwm to a specific display, make sure that
-the DISPLAY environment variable is set correctly, e.g.:
-
-    DISPLAY=foo.bar:1 exec dwm
-
-(This will start dwm on display :1 of the host foo.bar.)
-
-In order to display status info in the bar, you can do something
-like this in your .xinitrc:
-
-    while xsetroot -name "`date` `uptime | sed 's/.*,//'`"
-    do
-    	sleep 1
-    done &
-    exec dwm
-
-
-Configuration
--------------
-The configuration of dwm is done by creating a custom config.h
-and (re)compiling the source code.
