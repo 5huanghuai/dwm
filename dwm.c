@@ -1783,8 +1783,7 @@ run(void)
 
 void
 runAutostart(void) {
-	system("cd ~/bin/dwm.scripts; ./blocking.sh");
-	system("cd ~/bin/dwm.scripts; ./init.sh &");
+	system("cd ~/Script; ./bluetooth-auto-connect.sh");
 }
 
 void
