@@ -85,7 +85,7 @@ static const Layout layouts[] = {
 static const char *dmenucmd[] = { "rofi", "-show","drun","-show-icons", NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char scratchpadname[] = "scratchpad";
-static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "60x20", NULL };
+static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "100x20", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -102,10 +102,10 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
 	{ MODKEY,                       XK_c,      killclient,     {0} },
+	{ MODKEY,                       XK_g,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[1]} },
 	// { MODKEY,                       XK_f,      setlayout,      {.v = &layouts[/*注释掉的无布局*/]} },
 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
-	{ MODKEY,                       XK_g,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_space,  setlayout,      {0} },
 	{ MODKEY|ShiftMask,             XK_space,  togglefloating, {0} },
 	{ MODKEY,                       XK_0,      view,           {.ui = ~0 } },
