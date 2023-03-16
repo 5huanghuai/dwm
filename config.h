@@ -85,7 +85,7 @@ static const Layout layouts[] = {
 static const char *dmenucmd[] = { "rofi", "-show","drun","-show-icons", NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char scratchpadname[] = "scratchpad";
-static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "100x20", NULL };
+static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "150x30", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
